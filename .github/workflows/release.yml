@@ -1,0 +1,68 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
+      - name: Build for multiple platforms
+        run: |
+          GOOS=linux GOARCH=amd64 go build -o remotion-cli-linux-amd64
+          GOOS=darwin GOARCH=amd64 go build -o remotion-cli-darwin-amd64
+          GOOS=darwin GOARCH=arm64 go build -o remotion-cli-darwin-arm64
+          GOOS=windows GOARCH=amd64 go build -o remotion-cli-windows-amd64.exe
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+      - name: Upload Linux AMD64 Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./remotion-cli-linux-amd64
+          asset_name: remotion-cli-linux-amd64
+          asset_content_type: application/octet-stream
+      - name: Upload macOS AMD64 Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./remotion-cli-darwin-amd64
+          asset_name: remotion-cli-darwin-amd64
+          asset_content_type: application/octet-stream
+      - name: Upload macOS ARM64 Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./remotion-cli-darwin-arm64
+          asset_name: remotion-cli-darwin-arm64
+          asset_content_type: application/octet-stream
+      - name: Upload Windows AMD64 Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./remotion-cli-windows-amd64.exe
+          asset_name: remotion-cli-windows-amd64.exe
+          asset_content_type: application/octet-stream
