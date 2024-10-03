@@ -101,16 +101,13 @@ func renderVideo(c *cli.Context) error {
 	for {
 		renderProgressResponse, renderProgressError := lambda_go_sdk.GetRenderProgress(renderProgressInputRequest)
 		if renderProgressError != nil {
-			return fmt.Errorf("render progress error: %w", renderProgressError)
+			return fmt.Errorf("(%s) render progress error: %w", renderResponse.RenderId, renderProgressError)
 		}
 
 		if len(renderProgressResponse.Errors) > 0 {
-			if !c.Bool("quiet") {
-				fmt.Println("Errors:")
-				for _, err := range renderProgressResponse.Errors {
-					fmt.Printf("- %s\n", err)
-				}
-			}
+			fmt.Println("Errors:")
+			errorsJSON, _ := json.Marshal(renderProgressResponse)
+			fmt.Println(string(errorsJSON))
 			return fmt.Errorf("rendering failed with errors")
 		}
 
