@@ -1,6 +1,6 @@
 module remotion-cli
 
-go 1.23.2
+go 1.23
 
 require (
 	github.com/aws/aws-sdk-go v1.44.257 // indirect
